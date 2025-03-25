@@ -1,0 +1,5 @@
+package com.offerblock.enums;
+
+public enum ERole {
+	ROLE_ADMIN, ROLE_CANDIDATE, ROLE_COMPANY, ROLE_RECRUITER, ROLE_APPROVER, ROLE_SANCTIONER
+}

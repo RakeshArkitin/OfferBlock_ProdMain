@@ -1,0 +1,11 @@
+package com.offerblock.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class AssignApproverRequest {
+	private String candidateId;
+	private String designation;
+}
