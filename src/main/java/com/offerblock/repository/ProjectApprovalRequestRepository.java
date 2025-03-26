@@ -12,5 +12,5 @@ import com.offerblock.entity.ProjectApprover;
 public interface ProjectApprovalRequestRepository extends JpaRepository<ProjectApprovalRequest, Long> {
 	List<ProjectApprovalRequest> findByApprover(ProjectApprover approver);
 
-	Optional<Project> findByProject(Project project);
+	Optional<ProjectApprovalRequest> findByProject(Project project);
 }

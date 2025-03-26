@@ -234,9 +234,9 @@ public class ProjectController {
 	}
 
 	@PreAuthorize("hasAnyRole('RECRUITER','COMPANY')")
-	@PostMapping("/{projectId}/send-approval-request")
+	@PostMapping("/{projectId}/send-approval-request/{requestedById}")
 	public ResponseEntity<String> sendApprovalRequest(@PathVariable Long projectId,
-			@RequestParam String requestedById) {
+			@PathVariable String requestedById) {
 		projectService.sendProjectApprovalRequest(projectId, requestedById);
 		return ResponseEntity.ok("Approval request send successfully");
 	}
