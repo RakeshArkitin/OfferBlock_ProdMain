@@ -44,7 +44,7 @@ public class Department {
 
 	@ManyToMany
 	@JoinTable(name = "hr_department", joinColumns = @JoinColumn(name = "department_id"), inverseJoinColumns = @JoinColumn(name = "recruiter_id"))
-	private List<AssignedRecruiter> assignedHRs = new ArrayList<>();
+	private List<ProjectAssignedRecruiter> assignedHRs = new ArrayList<>();
 
 	@OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnoreProperties("department")

@@ -22,7 +22,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class AssignedRecruiter {
+public class ProjectAssignedRecruiter {
 
 	@Id
 	private String id;

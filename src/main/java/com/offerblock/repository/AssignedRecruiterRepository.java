@@ -1,12 +1,14 @@
 package com.offerblock.repository;
 
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.offerblock.entity.AssignedRecruiter;
 
-public interface AssignedRecruiterRepository extends JpaRepository<AssignedRecruiter, String> {
+import com.offerblock.entity.ProjectAssignedRecruiter;
+
+public interface AssignedRecruiterRepository extends JpaRepository<ProjectAssignedRecruiter, String> {
 
 	@EntityGraph(attributePaths = { "departments" })
-	Optional<AssignedRecruiter> findById(String id);
+	Optional<ProjectAssignedRecruiter> findById(String id);
 }

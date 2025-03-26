@@ -3,19 +3,23 @@ package com.offerblock.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
 import com.offerblock.dto.DepartmentDTO;
 import com.offerblock.dto.PositionDTO;
 import com.offerblock.dto.ProjectResponseDTO;
 import com.offerblock.dto.RecruiterDTO;
-import com.offerblock.entity.AssignedRecruiter;
 import com.offerblock.entity.Budget;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.Department;
 import com.offerblock.entity.Position;
 import com.offerblock.entity.Project;
+import com.offerblock.entity.ProjectApprovalRequest;
+import com.offerblock.entity.ProjectApprover;
+import com.offerblock.entity.ProjectAssignedRecruiter;
 import com.offerblock.entity.ProjectMetrics;
 import com.offerblock.exception.DuplicateValueExistsException;
 import com.offerblock.exception.ResourceNotFoundException;
@@ -24,9 +28,12 @@ import com.offerblock.repository.CompanyRepository;
 import com.offerblock.repository.DepartmentRepository;
 import com.offerblock.repository.OfferRepository;
 import com.offerblock.repository.PositionRepository;
+import com.offerblock.repository.ProjectApprovalRequestRepository;
+import com.offerblock.repository.ProjectApproverRepository;
 import com.offerblock.repository.ProjectMetricsRepository;
 import com.offerblock.repository.ProjectRepository;
 import com.offerblock.service.ProjectService;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -39,6 +46,12 @@ public class ProjectServiceImpl implements ProjectService {
 	private final OfferRepository offerRepository;
 	private final PositionRepository positionRepository;
 	private final CompanyRepository companyRepository;
+
+	@Autowired
+	private ProjectApprovalRequestRepository projectApprovalRequestRepository;
+
+	@Autowired
+	private ProjectApproverRepository projectApproverRepository;
 
 	@Autowired
 	public ProjectServiceImpl(ProjectRepository projectRepository, AssignedRecruiterRepository recruiterRepository,
@@ -80,14 +93,14 @@ public class ProjectServiceImpl implements ProjectService {
 
 				// Step 4.1: Process assigned recruiters for the department
 				if (dept.getAssignedHRs() != null && !dept.getAssignedHRs().isEmpty()) {
-					List<AssignedRecruiter> validRecruiters = new ArrayList<>();
-					for (AssignedRecruiter recruiter : dept.getAssignedHRs()) {
-						AssignedRecruiter existingRecruiter = recruiterRepository.findById(recruiter.getId())
+					List<ProjectAssignedRecruiter> validRecruiters = new ArrayList<>();
+					for (ProjectAssignedRecruiter recruiter : dept.getAssignedHRs()) {
+						ProjectAssignedRecruiter existingRecruiter = recruiterRepository.findById(recruiter.getId())
 								.orElse(null);
 
 						if (existingRecruiter == null) {
 							// 🔹 Recruiter doesn't exist, create a new one
-							existingRecruiter = new AssignedRecruiter();
+							existingRecruiter = new ProjectAssignedRecruiter();
 							existingRecruiter.setId(recruiter.getId()); // Assigning ID from candidate
 							existingRecruiter.setName(recruiter.getName());
 							existingRecruiter.setDesiganation(recruiter.getDesiganation());
@@ -119,14 +132,15 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 
 		// Step 6: Process project recruiters
-		List<AssignedRecruiter> validProjectRecruiters = new ArrayList<>();
+		List<ProjectAssignedRecruiter> validProjectRecruiters = new ArrayList<>();
 		if (project.getProjectHRs() != null) {
-			for (AssignedRecruiter recruiter : project.getProjectHRs()) {
-				AssignedRecruiter existingRecruiter = recruiterRepository.findById(recruiter.getId()).orElse(null);
+			for (ProjectAssignedRecruiter recruiter : project.getProjectHRs()) {
+				ProjectAssignedRecruiter existingRecruiter = recruiterRepository.findById(recruiter.getId())
+						.orElse(null);
 
 				if (existingRecruiter == null) {
 					// 🔹 Create new recruiter if they don't exist
-					existingRecruiter = new AssignedRecruiter();
+					existingRecruiter = new ProjectAssignedRecruiter();
 					existingRecruiter.setId(recruiter.getId());
 					existingRecruiter.setName(recruiter.getName());
 					existingRecruiter.setDesiganation(recruiter.getDesiganation());
@@ -264,6 +278,29 @@ public class ProjectServiceImpl implements ProjectService {
 
 		departmentRepository.deleteAll(project.getDepartments());
 		projectRepository.delete(project);
+	}
+
+	@Transactional
+	@Override
+	public void sendProjectApprovalRequest(Long projectId, String requestedById) {
+
+		Project project = projectRepository.findById(projectId)
+				.orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+		if (projectApprovalRequestRepository.findByProject(project).isPresent()) {
+			throw new DuplicateValueExistsException("Approval request already sent for this project");
+		}
+
+		ProjectApprover approver = projectApproverRepository.findByCompany(project.getCompany())
+				.orElseThrow(() -> new ResourceNotFoundException("No approver assigned to this company"));
+
+		ProjectApprovalRequest approvalRequest = new ProjectApprovalRequest();
+		approvalRequest.setProject(project);
+		approvalRequest.setApprover(approver);
+		approvalRequest.setRequestedBy(requestedById);
+
+		projectApprovalRequestRepository.save(approvalRequest);
+
 	}
 
 }

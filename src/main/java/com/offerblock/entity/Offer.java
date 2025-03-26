@@ -74,7 +74,7 @@ public class Offer {
 
 	@ManyToOne
 	@JoinColumn(name = "recruiter_id", nullable = true)
-	private AssignedRecruiter recruiter;
+	private ProjectAssignedRecruiter recruiter;
 
 	@ManyToOne // Ensure this annotation exists
 	@JoinColumn(name = "project_id") // This should match your database column

@@ -57,7 +57,7 @@ public class Project {
 
 	@ManyToMany
 	@JoinTable(name = "project_recruiter", joinColumns = @JoinColumn(name = "project_id"), inverseJoinColumns = @JoinColumn(name = "recruiter_id"))
-	private List<AssignedRecruiter> projectHRs;
+	private List<ProjectAssignedRecruiter> projectHRs;
 
 	@OneToOne(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private ProjectMetrics projectMetrics;
@@ -70,6 +70,10 @@ public class Project {
 	private Company company;
 
 	private boolean approved = false;
+
+	@ManyToOne
+	@JoinColumn(name = "created_by_recruiter_id")
+	private Recruiter createdByRecruiter;
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;

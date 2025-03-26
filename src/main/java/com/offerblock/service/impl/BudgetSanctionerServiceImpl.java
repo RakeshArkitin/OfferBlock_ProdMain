@@ -140,7 +140,7 @@ public class BudgetSanctionerServiceImpl implements BudgetSanctionerService {
 	@Override
 	public void deactiveBudgetSanctioner(String candidateId, Principal principal) {
 
-		Candidate candidate = candidateRepository.findByCandidateId(candidateId)
+		candidateRepository.findByCandidateId(candidateId)
 				.orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
 		Company company = companyRepository.findByEmail(principal.getName())
@@ -157,7 +157,7 @@ public class BudgetSanctionerServiceImpl implements BudgetSanctionerService {
 	@Override
 	public List<BudgetSanctioner> getBudgetSanctionerHistoryByCandidateId(String candidateId) {
 
-		Candidate candidate = candidateRepository.findByCandidateId(candidateId)
+		candidateRepository.findByCandidateId(candidateId)
 				.orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
 		return budgetSanctionerRepository.findAllByCandidate_CandidateId(candidateId);

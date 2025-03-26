@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,19 +20,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.offerblock.dto.PositionDTO;
 import com.offerblock.dto.ProjectResponseDTO;
 import com.offerblock.dto.ProjectWithPositionsDTO;
 import com.offerblock.entity.Budget;
+import com.offerblock.entity.Candidate;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.Project;
+import com.offerblock.entity.Recruiter;
 import com.offerblock.enums.BudgetStatus;
 import com.offerblock.enums.ProjectStatus;
 import com.offerblock.exception.ResourceNotFoundException;
+import com.offerblock.repository.CandidateRepository;
 import com.offerblock.repository.CompanyRepository;
 import com.offerblock.repository.OfferRepository;
 import com.offerblock.repository.ProjectRepository;
+import com.offerblock.repository.RecruiterRepository;
 import com.offerblock.service.ProjectService;
 
 @RestController
@@ -43,6 +50,12 @@ public class ProjectController {
 	private final CompanyRepository companyRepository;
 	private final ProjectRepository projectRepository;
 	private final OfferRepository offerRepository;
+	
+	@Autowired
+	private CandidateRepository candidateRepository;
+	
+	@Autowired
+	private RecruiterRepository recruiterRepository;
 
 	@Autowired
 	public ProjectController(ProjectService projectService, CompanyRepository companyRepository,
@@ -54,23 +67,43 @@ public class ProjectController {
 		this.offerRepository = offerRepository;
 	}
 
-	@PreAuthorize("hasRole('COMPANY')")
+	@PreAuthorize("hasAnyRole('COMPANY','RECRUITER')")
 	@PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createProject(@RequestBody Project project, Principal principal) {
 
-		String email = principal.getName();
+	    String email = principal.getName(); // Logged-in user's email
 
-		Optional<Company> companyOpt = companyRepository.findByEmail(email);
+	    // Step 1: Try to fetch the company user
+	    Optional<Company> companyOpt = companyRepository.findByEmail(email);
 
-		if (companyOpt.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Company not found");
-		}
+	    if (companyOpt.isPresent()) {
+	        // Company is creating the project
+	        project.setCompany(companyOpt.get());
+	    } else {
+	        // Step 2: If not a company, check if it's a recruiter
+	        Optional<Candidate> candidateOpt = candidateRepository.findByEmail(email);
+	        if (candidateOpt.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Candidate not found");
+	        }
 
-		project.setCompany(companyOpt.get());
-		project.setStatus(ProjectStatus.PENDING);  
+	        Optional<Recruiter> recruiterOpt = recruiterRepository.findByCandidate(candidateOpt.get());
+	        if (recruiterOpt.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter not found");
+	        }
 
-		projectService.saveProject(project);
-		return ResponseEntity.ok("Project created successfully!!");
+	        Recruiter recruiter = recruiterOpt.get();
+	        if (!recruiter.isActive()) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter is not active");
+	        }
+
+	        project.setCompany(recruiter.getCompany());
+	        project.setCreatedByRecruiter(recruiter); // Optional: track who created it
+	    }
+
+	    project.setStatus(ProjectStatus.PENDING);
+
+	    projectService.saveProject(project);
+	    return ResponseEntity.ok("Project created successfully!!");
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")
@@ -200,7 +233,14 @@ public class ProjectController {
 
 		projectRepository.delete(project);
 		return ResponseEntity.ok("Project deleted successfully");
+	}
 
+	@PreAuthorize("hasAnyRole('RECRUITER','COMPANY')")
+	@PostMapping("/{projectId}/send-approval-request")
+	public ResponseEntity<String> sendApprovalRequest(@PathVariable Long projectId,
+			@RequestParam String requestedById) {
+		projectService.sendProjectApprovalRequest(projectId, requestedById);
+		return ResponseEntity.ok("Approval request send successfully");
 	}
 
 }

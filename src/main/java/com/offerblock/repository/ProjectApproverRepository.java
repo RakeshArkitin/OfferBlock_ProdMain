@@ -2,8 +2,11 @@ package com.offerblock.repository;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.offerblock.entity.Candidate;
+import com.offerblock.entity.Company;
 import com.offerblock.entity.ProjectApprover;
 
 public interface ProjectApproverRepository extends JpaRepository<ProjectApprover, Long> {
@@ -19,6 +22,8 @@ public interface ProjectApproverRepository extends JpaRepository<ProjectApprover
 	List<ProjectApprover> findByCompany_Id(Long id);
 
 	List<ProjectApprover> findAllByCandidate_CandidateId(String candidateId);
+	
+    Optional<ProjectApprover> findByCompany(Company company);
 
-	List<ProjectApprover> findByCompanyIdAndActiveTrue(Long companyId);
+
 }
