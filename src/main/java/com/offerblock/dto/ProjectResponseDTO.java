@@ -15,19 +15,19 @@ public class ProjectResponseDTO {
 	private String projectName;
 	private Budget budget;
 	private List<DepartmentDTO> departments;
-	private List<RecruiterDTO> projectRecruitors;
+	private List<RecruiterDTO> projectHRs;
 	private int offerCount;
 	private int hiringCount;
 	private String status;
 
 	public ProjectResponseDTO(Long projectId, String projectName, Budget budget, List<DepartmentDTO> departments,
-			List<RecruiterDTO> projectRecruitors, int offerCount, int hiringCount, String status) {
+			List<RecruiterDTO> projectHRs, int offerCount, int hiringCount, String status) {
 		super();
 		this.projectId = projectId;
 		this.projectName = projectName;
 		this.budget = budget;
 		this.departments = departments;
-		this.projectRecruitors = projectRecruitors;
+		this.projectHRs = projectHRs;
 		this.offerCount = offerCount;
 		this.hiringCount = hiringCount;
 		this.status = status;
