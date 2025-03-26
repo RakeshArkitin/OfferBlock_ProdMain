@@ -1,5 +1,5 @@
 package com.offerblock.enums;
 
 public enum ProjectStatus {
-	PENDING, APPROVED, REJECTED
+	PENDING, REQUESTED, APPROVED, REJECTED, IN_PROGRESS, COMPLETED
 }

@@ -10,15 +10,12 @@ public interface ProjectService {
 
 	public Project saveProject(Project project);
 
-	public Project Update();
-
 	public List<ProjectResponseDTO> getAllProjectResponse(Company company);
 
 //	Project updateProject(Long projectId, Project updatedProject);
 
 	public void deleteProject(String projectName, Company company);
 
-	public Project updateProject(String projectId, Project updatedProject, String companyEmail);
-
+	public Project updateProject(String projectName, Project updatedProject, String companyEmail);
 
 }

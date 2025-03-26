@@ -133,7 +133,7 @@ public class ProjectApproverServiceImpl implements ProjectApproverService {
 
 	@Override
 	public void deactiveProjectApprover(String candidateId, Principal principal) {
-		Candidate candidate = candidateRepository.findByCandidateId(candidateId)
+		candidateRepository.findByCandidateId(candidateId)
 				.orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
 		Company company = companyRepository.findByEmail(principal.getName())
@@ -149,7 +149,7 @@ public class ProjectApproverServiceImpl implements ProjectApproverService {
 
 	@Override
 	public List<ProjectApprover> getProjectApproverHistoryByCandidateId(String candidateId) {
-		Candidate candidate = candidateRepository.findByCandidateId(candidateId)
+		candidateRepository.findByCandidateId(candidateId)
 				.orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
 		return projectApproverRepository.findAllByCandidate_CandidateId(candidateId);

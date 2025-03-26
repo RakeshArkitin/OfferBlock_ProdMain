@@ -138,7 +138,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 
 	@Override
 	public void deactiveRecruiter(String candidateId, Principal principal) {
-		Candidate candidate = candidateRepository.findByCandidateId(candidateId)
+		candidateRepository.findByCandidateId(candidateId)
 				.orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
 		Company company = companyRepository.findByEmail(principal.getName())
@@ -153,7 +153,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 	}
 	
 	public List<Recruiter> getRecruiterHistoryByCandidateId(String candidateId) {
-	    Candidate candidate = candidateRepository.findByCandidateId(candidateId)
+	    candidateRepository.findByCandidateId(candidateId)
 	            .orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
 
 	    return recruiterRepository.findAllByCandidate_CandidateId(candidateId);

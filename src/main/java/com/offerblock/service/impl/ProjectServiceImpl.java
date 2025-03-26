@@ -144,12 +144,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Transactional
 	@Override
-	public Project Update() {
-		return null;
-	}
-
-	@Transactional
-	@Override
 	public Project updateProject(String projectName, Project updatedProject, String companyEmail) {
 		// Validate Company
 		Company company = companyRepository.findByEmail(companyEmail)
