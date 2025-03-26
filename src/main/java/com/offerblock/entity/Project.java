@@ -3,13 +3,10 @@ package com.offerblock.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.offerblock.enums.ProjectStatus;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -72,7 +69,7 @@ public class Project {
 	private boolean approved = false;
 
 	@ManyToOne
-	@JoinColumn(name = "created_by_recruiter_id")
+	@JoinTable(name = "recruiter_created_project", joinColumns = @JoinColumn(name = "projectId"), inverseJoinColumns = @JoinColumn(name = "created_by_recruiter_id"))
 	private Recruiter createdByRecruiter;
 
 	@CreationTimestamp
