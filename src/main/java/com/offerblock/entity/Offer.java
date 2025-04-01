@@ -76,8 +76,8 @@ public class Offer {
 	@JoinColumn(name = "recruiter_id", nullable = true)
 	private AssignedRecruiter recruiter;
 
-	@ManyToOne // Ensure this annotation exists
-	@JoinColumn(name = "project_id") // This should match your database column
+	@ManyToOne 
+	@JoinColumn(name = "project_id") 
 	private Project project;
 
 	@CreationTimestamp

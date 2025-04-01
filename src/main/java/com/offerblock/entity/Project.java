@@ -63,7 +63,7 @@ public class Project {
 	private List<Position> positions = new ArrayList<>();
 
 	@ManyToOne
-	@JoinColumn(name = "company_id", nullable = false)
+	@JoinColumn(name = "company_id")
 	private Company company;
 
 	private boolean approved = false;

@@ -40,6 +40,7 @@ import com.offerblock.repository.OfferRepository;
 import com.offerblock.repository.ProjectApprovalRequestRepository;
 import com.offerblock.repository.ProjectRepository;
 import com.offerblock.repository.RecruiterRepository;
+import com.offerblock.response.ApiResponse;
 import com.offerblock.service.ProjectService;
 
 @RestController
@@ -84,17 +85,20 @@ public class ProjectController {
 
 			Optional<Candidate> candidateOpt = candidateRepository.findByEmail(email);
 			if (candidateOpt.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Candidate not found");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(new ApiResponse(false, "Candidate not found"));
 			}
 
 			Optional<Recruiter> recruiterOpt = recruiterRepository.findByCandidate(candidateOpt.get());
 			if (recruiterOpt.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter not found");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(new ApiResponse(false, "Recruiter not found"));
 			}
 
 			Recruiter recruiter = recruiterOpt.get();
 			if (!recruiter.isActive()) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter is not active");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(new ApiResponse(false, "Recruiter is not active"));
 			}
 
 			project.setCompany(recruiter.getCompany());
@@ -104,7 +108,7 @@ public class ProjectController {
 		project.setStatus(ProjectStatus.PENDING);
 
 		projectService.saveProject(project);
-		return ResponseEntity.ok("Project created successfully!!");
+		return ResponseEntity.ok(new ApiResponse(true, "Project created successfully!!"));
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")
@@ -269,7 +273,5 @@ public class ProjectController {
 		}
 		throw new ResourceNotFoundException("User not found as approver or company");
 	}
-	
-	
 
 }
