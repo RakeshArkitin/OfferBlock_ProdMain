@@ -1,10 +1,14 @@
 package com.offerblock.dto;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.offerblock.entity.Budget;
+import com.offerblock.entity.Project;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.util.List;
 
 @Getter
 @Setter

@@ -21,8 +21,10 @@ public interface ProjectApprovalRequestRepository extends JpaRepository<ProjectA
 	Optional<ProjectApprovalRequest> findByProject(Project project);
 
 	@Query("SELECT p FROM ProjectApprovalRequest p WHERE p.approver.candidate = :candidate AND p.status = :status")
-	List<ProjectApprovalRequest> findByCandidateAndStatus(@Param("candidate") Candidate candidate,
-			@Param("status") ApprovalStatus status);
+    List<ProjectApprovalRequest> findByCandidateAndStatus(@Param("candidate") Candidate candidate,
+                                                          @Param("status") ApprovalStatus status);
 
-	List<ProjectApprovalRequest> findByCompanyAndStatus(Company company, ApprovalStatus status);
+    @Query("SELECT p FROM ProjectApprovalRequest p WHERE p.company = :company AND p.status = :status")
+    List<ProjectApprovalRequest> findByCompanyAndStatus(@Param("company") Company company,
+                                                        @Param("status") ApprovalStatus status);
 }
