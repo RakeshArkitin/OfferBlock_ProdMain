@@ -6,18 +6,17 @@ public class ProjectApprovalRequestDto {
 
 	private Long id;
 	private Long projectId;
-	private String projectName;
 	private String requestedBy;
 	private String companyId;
 	private String companyName;
 	private String approverId;
-	private String approverName;
 	private String status;
+	private ProjectResponseDTO project;
 
 	public ProjectApprovalRequestDto(ProjectApprovalRequest request) {
 		this.id = request.getId();
 		this.projectId = request.getProject().getProjectId();
-		this.projectName = request.getProject().getProjectName();
+		this.project = new ProjectResponseDTO(request.getProject());
 		this.requestedBy = request.getRequestedBy();
 		this.companyId = request.getCompany().getCompanyId();
 		this.companyName = request.getCompany().getCompanyName();
@@ -31,10 +30,6 @@ public class ProjectApprovalRequestDto {
 
 	public Long getProjectId() {
 		return projectId;
-	}
-
-	public String getProjectName() {
-		return projectName;
 	}
 
 	public String getRequestedBy() {
@@ -57,24 +52,12 @@ public class ProjectApprovalRequestDto {
 		return status;
 	}
 
-	public String getApproverName() {
-		return approverName;
-	}
-
-	public void setApproverName(String approverName) {
-		this.approverName = approverName;
-	}
-
 	public void setId(Long id) {
 		this.id = id;
 	}
 
 	public void setProjectId(Long projectId) {
 		this.projectId = projectId;
-	}
-
-	public void setProjectName(String projectName) {
-		this.projectName = projectName;
 	}
 
 	public void setRequestedBy(String requestedBy) {

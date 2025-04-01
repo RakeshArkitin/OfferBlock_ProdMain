@@ -37,4 +37,37 @@ public class ProjectResponseDTO {
 		this.status = status;
 	}
 
+	public ProjectResponseDTO(Project project) {
+		this.projectId = project.getProjectId();
+		this.projectName = project.getProjectName();
+
+		// Assigning the budget (assuming you want to keep it as a Budget object)
+		this.budget = project.getBudget() != null ? project.getBudget() : new Budget(); // Handle null case for Budget
+
+		// Assigning status
+		this.status = project.getStatus() != null ? project.getStatus().name() : "Not Assigned";
+
+		// Convert Department entities to DepartmentDTOs
+		this.departments = project.getDepartments().stream()
+				.map(department -> new DepartmentDTO(department.getDepartmentName(),
+						department.getAssignedHRs().stream()
+								.map(recruiter -> new RecruiterDTO(recruiter.getId(), recruiter.getName(),
+										recruiter.getDesiganation()))
+								.collect(Collectors.toList()),
+						department.getPositions().stream().map(position -> new PositionDTO(position)) // Assuming
+																										// PositionDTO
+																										// conversion
+								.collect(Collectors.toList())))
+				.collect(Collectors.toList());
+
+		// If you need the HRs at project level (assuming they are stored in projectHRs
+		// field)
+		this.projectHRs = project.getProjectHRs().stream()
+				.map(recruiter -> new RecruiterDTO(recruiter.getId(), recruiter.getName(), recruiter.getDesiganation()))
+				.collect(Collectors.toList());
+
+		// Calculate the hiring count (implement your logic here)
+		this.hiringCount = project.getHiringCount(); // Use your actual logic for this field
+	}
+
 }
