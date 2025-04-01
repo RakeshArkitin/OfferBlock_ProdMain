@@ -54,7 +54,7 @@ public class Project {
 
 	@ManyToMany
 	@JoinTable(name = "project_recruiter", joinColumns = @JoinColumn(name = "project_id"), inverseJoinColumns = @JoinColumn(name = "recruiter_id"))
-	private List<ProjectAssignedRecruiter> projectHRs;
+	private List<AssignedRecruiter> projectHRs;
 
 	@OneToOne(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private ProjectMetrics projectMetrics;

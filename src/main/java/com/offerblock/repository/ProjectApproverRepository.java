@@ -22,8 +22,7 @@ public interface ProjectApproverRepository extends JpaRepository<ProjectApprover
 	List<ProjectApprover> findByCompany_Id(Long id);
 
 	List<ProjectApprover> findAllByCandidate_CandidateId(String candidateId);
-	
-    Optional<ProjectApprover> findByCompany(Company company);
 
+	List<ProjectApprover> findByCompany(Company company);
 
 }

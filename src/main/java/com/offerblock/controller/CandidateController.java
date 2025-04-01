@@ -29,7 +29,7 @@ public class CandidateController {
                 .body("Success: Candidate '" + candidateSignup.getUsername() + "' registered successfully!");
     }
 
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("hasRole('CANDIDATE')")
     @GetMapping("/{candidateId}")
     public ResponseEntity<Object> getCandidate(@PathVariable String candidateId) {
         try {

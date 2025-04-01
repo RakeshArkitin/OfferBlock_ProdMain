@@ -1,21 +1,23 @@
 package com.offerblock.response;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthResponse {
 	private String token;
-	private String role;
+	private List<String> role;
 	private String userId;
 	private String companyName;
 
-	public AuthResponse(String token, String role, String userId) {
+	public AuthResponse(String token, List<String> role, String userId) {
 		this.token = token;
 		this.role = role;
 		this.userId = userId;
 	}
 
-	public AuthResponse(String token, String role, String userId, String companyName) {
+	public AuthResponse(String token, List<String> role, String userId, String companyName) {
 		super();
 		this.token = token;
 		this.role = role;
@@ -27,8 +29,12 @@ public class AuthResponse {
 		return token;
 	}
 
-	public String getRole() {
+	public List<String> getRoles() {
 		return role;
+	}
+
+	public void setRoles(List<String> role) {
+		this.role = role;
 	}
 
 	public String getUserId() {
@@ -45,10 +51,6 @@ public class AuthResponse {
 
 	public void setToken(String token) {
 		this.token = token;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
 	}
 
 	public void setUserId(String userId) {

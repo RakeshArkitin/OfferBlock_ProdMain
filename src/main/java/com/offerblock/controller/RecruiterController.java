@@ -51,7 +51,6 @@ public class RecruiterController {
 	@PutMapping("/update/{candidateId}")
 	public ResponseEntity<?> updateRecruiter(@PathVariable String candidateId,
 			@RequestParam("designation") String designation, Principal principal) {
-
 		recruiterService.updateRecruiter(candidateId, designation, principal);
 		return ResponseEntity.ok("Recruiter updated successfully.");
 	}
@@ -66,7 +65,6 @@ public class RecruiterController {
 	@GetMapping("/get/{candidateId}")
 	@PreAuthorize("hasRole('COMPANY')")
 	public ResponseEntity<Recruiter> getRecruiterByCandidateId(@PathVariable String candidateId, Principal principal) {
-
 		Recruiter recruiter = recruiterService.getRecruiterByCandidateIdForCompany(candidateId, principal);
 		return ResponseEntity.ok(recruiter);
 	}

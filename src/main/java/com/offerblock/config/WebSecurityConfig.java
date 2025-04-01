@@ -91,7 +91,7 @@ public class WebSecurityConfig {
 				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers("/favicon.ico").permitAll().requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers("/api/offers/getAlloffer").permitAll().requestMatchers("/api/recruiter/create")
-						.permitAll().requestMatchers("/api/projects/**").hasAnyRole("COMPANY", "RECRUITER")
+						.permitAll().requestMatchers("/api/projects/**").hasAnyRole("COMPANY", "RECRUITER","APPROVER")
 						.requestMatchers("/api/recruiter/**").permitAll().requestMatchers("/api/approver/**")
 						.permitAll().requestMatchers("/api/sanctioner/**").permitAll()
 						.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs.yaml")

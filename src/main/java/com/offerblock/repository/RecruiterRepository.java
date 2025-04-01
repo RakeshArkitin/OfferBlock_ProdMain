@@ -14,13 +14,15 @@ public interface RecruiterRepository extends JpaRepository<Recruiter, Long> {
 
 	Optional<Recruiter> findByCandidate_CandidateIdAndCompany_Id(String candidateId, Long companyId);
 
-	Optional<Recruiter> findByCandidate_CandidateIdAndActiveTrue(String candidateId);
+    Optional<Recruiter> findByCandidate_CandidateIdAndActiveTrue(String candidateId);
 
 	List<Recruiter> findByCompany_Id(Long id);
 	
 	List<Recruiter> findAllByCandidate_CandidateId(String candidateId);
 	
 	List<Recruiter> findByCompanyIdAndActiveTrue(Long companyId);
+	
+	
 
 
 

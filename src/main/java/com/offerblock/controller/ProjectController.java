@@ -21,19 +21,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.offerblock.dto.PositionDTO;
+import com.offerblock.dto.ProjectApprovalRequestDto;
 import com.offerblock.dto.ProjectResponseDTO;
 import com.offerblock.dto.ProjectWithPositionsDTO;
 import com.offerblock.entity.Budget;
 import com.offerblock.entity.Candidate;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.Project;
+import com.offerblock.entity.ProjectApprovalRequest;
 import com.offerblock.entity.Recruiter;
+import com.offerblock.enums.ApprovalStatus;
 import com.offerblock.enums.BudgetStatus;
 import com.offerblock.enums.ProjectStatus;
 import com.offerblock.exception.ResourceNotFoundException;
 import com.offerblock.repository.CandidateRepository;
 import com.offerblock.repository.CompanyRepository;
 import com.offerblock.repository.OfferRepository;
+import com.offerblock.repository.ProjectApprovalRequestRepository;
 import com.offerblock.repository.ProjectRepository;
 import com.offerblock.repository.RecruiterRepository;
 import com.offerblock.service.ProjectService;
@@ -47,10 +51,13 @@ public class ProjectController {
 	private final CompanyRepository companyRepository;
 	private final ProjectRepository projectRepository;
 	private final OfferRepository offerRepository;
-	
+
+	@Autowired
+	private ProjectApprovalRequestRepository projectApprovalRequestRepository;
+
 	@Autowired
 	private CandidateRepository candidateRepository;
-	
+
 	@Autowired
 	private RecruiterRepository recruiterRepository;
 
@@ -68,39 +75,36 @@ public class ProjectController {
 	@PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createProject(@RequestBody Project project, Principal principal) {
 
-	    String email = principal.getName(); // Logged-in user's email
+		String email = principal.getName();
+		Optional<Company> companyOpt = companyRepository.findByEmail(email);
 
-	    // Step 1: Try to fetch the company user
-	    Optional<Company> companyOpt = companyRepository.findByEmail(email);
+		if (companyOpt.isPresent()) {
+			project.setCompany(companyOpt.get());
+		} else {
 
-	    if (companyOpt.isPresent()) {
-	        // Company is creating the project
-	        project.setCompany(companyOpt.get());
-	    } else {
-	        // Step 2: If not a company, check if it's a recruiter
-	        Optional<Candidate> candidateOpt = candidateRepository.findByEmail(email);
-	        if (candidateOpt.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Candidate not found");
-	        }
+			Optional<Candidate> candidateOpt = candidateRepository.findByEmail(email);
+			if (candidateOpt.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Candidate not found");
+			}
 
-	        Optional<Recruiter> recruiterOpt = recruiterRepository.findByCandidate(candidateOpt.get());
-	        if (recruiterOpt.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter not found");
-	        }
+			Optional<Recruiter> recruiterOpt = recruiterRepository.findByCandidate(candidateOpt.get());
+			if (recruiterOpt.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter not found");
+			}
 
-	        Recruiter recruiter = recruiterOpt.get();
-	        if (!recruiter.isActive()) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter is not active");
-	        }
+			Recruiter recruiter = recruiterOpt.get();
+			if (!recruiter.isActive()) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Recruiter is not active");
+			}
 
-	        project.setCompany(recruiter.getCompany());
-	        project.setCreatedByRecruiter(recruiter); // Optional: track who created it
-	    }
+			project.setCompany(recruiter.getCompany());
+			project.setCreatedByRecruiter(recruiter);
+		}
 
-	    project.setStatus(ProjectStatus.PENDING);
+		project.setStatus(ProjectStatus.PENDING);
 
-	    projectService.saveProject(project);
-	    return ResponseEntity.ok("Project created successfully!!");
+		projectService.saveProject(project);
+		return ResponseEntity.ok("Project created successfully!!");
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")
@@ -166,7 +170,6 @@ public class ProjectController {
 		Project project = projectRepository.findByProjectName(projectName)
 				.orElseThrow(() -> new RuntimeException("Project not found"));
 
-		// Ensure project belongs to the authenticated company
 		if (!project.getCompany().getCompanyId().equals(company.getCompanyId())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this project.");
 		}
@@ -232,12 +235,41 @@ public class ProjectController {
 		return ResponseEntity.ok("Project deleted successfully");
 	}
 
-	@PreAuthorize("hasAnyRole('RECRUITER','COMPANY')")
-	@PostMapping("/{projectId}/send-approval-request/{requestedById}")
-	public ResponseEntity<String> sendApprovalRequest(@PathVariable Long projectId,
-			@PathVariable String requestedById) {
-		projectService.sendProjectApprovalRequest(projectId, requestedById);
-		return ResponseEntity.ok("Approval request send successfully");
+	@PreAuthorize("hasAnyRole('COMPANY', 'APPROVER')")
+	@GetMapping("/project-requests/pending")
+	public ResponseEntity<List<ProjectApprovalRequestDto>> getPendingRequests(Principal principal) {
+
+		String email = principal.getName();
+
+		Optional<Candidate> candidateOpt = candidateRepository.findByEmail(email);
+		if (candidateOpt.isPresent()) {
+			Candidate approverCandidate = candidateOpt.get();
+
+			List<ProjectApprovalRequest> requests = projectApprovalRequestRepository
+					.findByCandidateAndStatus(approverCandidate, ApprovalStatus.PENDING);
+
+			List<ProjectApprovalRequestDto> dtos = requests.stream().map(ProjectApprovalRequestDto::new)
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(dtos);
+		}
+
+		Optional<Company> companyOpt = companyRepository.findByEmail(email);
+		if (companyOpt.isPresent()) {
+			Company company = companyOpt.get();
+
+			List<ProjectApprovalRequest> requests = projectApprovalRequestRepository.findByCompanyAndStatus(company,
+					ApprovalStatus.PENDING_APPROVER_ASSIGNMENT);
+
+			List<ProjectApprovalRequestDto> dtos = requests.stream().map(ProjectApprovalRequestDto::new)
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(dtos);
+
+		}
+		throw new ResourceNotFoundException("User not found as approver or company");
 	}
+	
+	
 
 }
