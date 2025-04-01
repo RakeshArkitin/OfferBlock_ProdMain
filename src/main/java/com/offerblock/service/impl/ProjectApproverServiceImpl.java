@@ -77,8 +77,10 @@ public class ProjectApproverServiceImpl implements ProjectApproverService {
 
 	@Transactional
 	@Override
-	public List<ProjectApprover> getAllApprover() {
-		return projectApproverRepository.findAll();
+	public List<ProjectApprover> getAllApprover(String companyEmail) {
+		Company company = companyRepository.findByEmail(companyEmail)
+				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        return projectApproverRepository.findByCompany_Id(company.getId());
 	}
 
 	@Transactional

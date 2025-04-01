@@ -80,4 +80,12 @@ public class ProjectApprovalRequestDto {
 		this.status = status;
 	}
 
+	public ProjectResponseDTO getProject() {
+		return project;
+	}
+
+	public void setProject(ProjectResponseDTO project) {
+		this.project = project;
+	}
+
 }

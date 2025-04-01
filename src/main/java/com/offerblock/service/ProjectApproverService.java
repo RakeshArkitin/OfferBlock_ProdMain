@@ -10,8 +10,6 @@ public interface ProjectApproverService {
 
 	public ProjectApprover assignProjectApprover(AssignApproverRequest request, Principal principal);
 
-	public List<ProjectApprover> getAllApprover();
-
 	public ProjectApprover updateProjectApprover(String candidateId, String designation, Principal principal);
 
 	public void deleteProjectApprover(String candidateId);
@@ -21,5 +19,7 @@ public interface ProjectApproverService {
 	void deactiveProjectApprover(String candidateId, Principal principal);
 
 	List<ProjectApprover> getProjectApproverHistoryByCandidateId(String candidateId);
+
+	List<ProjectApprover> getAllApprover(String companyEmail);
 
 }
