@@ -20,6 +20,4 @@ public interface ProjectApproverService {
 
 	List<ProjectApprover> getProjectApproverHistoryByCandidateId(String candidateId);
 
-	List<ProjectApprover> getAllApprover(String companyEmail);
-
 }

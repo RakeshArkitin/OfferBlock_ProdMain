@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.offerblock.entity.Candidate;
 import com.offerblock.entity.Recruiter;
 
-public interface RecruiterRepository extends JpaRepository<Recruiter, Long> {
+public interface RecruiterRepository extends JpaRepository<Recruiter, String> {
 
 	Optional<Recruiter> findByCandidate(Candidate candidate);
 

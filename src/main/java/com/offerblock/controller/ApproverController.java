@@ -68,11 +68,4 @@ public class ApproverController {
 		return ResponseEntity.ok(history);
 	}
 
-	@PreAuthorize("hasRole('COMPANY')")
-	@GetMapping("/getAll")
-	public ResponseEntity<List<ProjectApprover>> getAllApprovers(Principal principal) {
-		String companyEmail = principal.getName();
-		List<ProjectApprover> getAllApprover = projectApproverService.getAllApprover(companyEmail);
-		return ResponseEntity.ok(getAllApprover);
-	}
 }

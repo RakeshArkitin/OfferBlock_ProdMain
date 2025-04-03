@@ -75,13 +75,13 @@ public class ProjectApproverServiceImpl implements ProjectApproverService {
 		return projectApproverRepository.save(approver);
 	}
 
-	@Transactional
-	@Override
-	public List<ProjectApprover> getAllApprover(String companyEmail) {
-		Company company = companyRepository.findByEmail(companyEmail)
-				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
-        return projectApproverRepository.findByCompany_Id(company.getId());
-	}
+//	@Transactional
+//	@Override
+//	public List<ProjectApprover> getAllApprover(String companyEmail) {
+//		Company company = companyRepository.findByEmail(companyEmail)
+//				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+//        return projectApproverRepository.findByCompany_Id(company.getId());
+//	}
 
 	@Transactional
 	@Override

@@ -68,10 +68,6 @@ public class Project {
 
 	private boolean approved = false;
 
-	@ManyToOne
-	@JoinTable(name = "recruiter_created_project", joinColumns = @JoinColumn(name = "projectId"), inverseJoinColumns = @JoinColumn(name = "created_by_recruiter_id"))
-	private Recruiter createdByRecruiter;
-
 	@CreationTimestamp
 	private LocalDateTime createdAt;
 

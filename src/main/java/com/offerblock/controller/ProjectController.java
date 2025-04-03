@@ -102,7 +102,6 @@ public class ProjectController {
 			}
 
 			project.setCompany(recruiter.getCompany());
-			project.setCreatedByRecruiter(recruiter);
 		}
 
 		project.setStatus(ProjectStatus.PENDING);
