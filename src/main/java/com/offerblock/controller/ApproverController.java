@@ -61,11 +61,11 @@ public class ApproverController {
 		return ResponseEntity.ok("Approver deactivated successfully.");
 	}
 
-//	@GetMapping("/history/{candidateId}")
-//	@PreAuthorize("hasAnyRole('COMPANY', 'SUPER_ADMIN')")
-//	public ResponseEntity<List<ProjectApprover>> getApproverHistory(@PathVariable String candidateId) {
-//		List<ProjectApprover> history = projectApproverService.getProjectApproverHistoryByCandidateId(candidateId);
-//		return ResponseEntity.ok(history);
-//	}
+	@GetMapping("/history/{candidateId}")
+	@PreAuthorize("hasAnyRole('COMPANY', 'SUPER_ADMIN')")
+	public ResponseEntity<List<ProjectApprover>> getApproverHistory(@PathVariable String candidateId) {
+		List<ProjectApprover> history = projectApproverService.getProjectApproverHistoryByCandidateId(candidateId);
+		return ResponseEntity.ok(history);
+	}
 
 }
