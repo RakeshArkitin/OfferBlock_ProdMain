@@ -18,4 +18,6 @@ public interface ProjectService {
 
 	public Project updateProject(String projectName, Project updatedProject, String companyEmail);
 
+	void approveProject(Long projectId);
+
 }

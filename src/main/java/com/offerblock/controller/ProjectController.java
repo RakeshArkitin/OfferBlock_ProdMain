@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,11 +21,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.offerblock.dto.BudgetSanctionRequestDto;
 import com.offerblock.dto.PositionDTO;
 import com.offerblock.dto.ProjectApprovalRequestDto;
 import com.offerblock.dto.ProjectResponseDTO;
 import com.offerblock.dto.ProjectWithPositionsDTO;
 import com.offerblock.entity.Budget;
+import com.offerblock.entity.BudgetSanctionRequest;
 import com.offerblock.entity.Candidate;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.Project;
@@ -34,6 +38,7 @@ import com.offerblock.enums.ApprovalStatus;
 import com.offerblock.enums.BudgetStatus;
 import com.offerblock.enums.ProjectStatus;
 import com.offerblock.exception.ResourceNotFoundException;
+import com.offerblock.repository.BudgetSanctionRequestRepository;
 import com.offerblock.repository.CandidateRepository;
 import com.offerblock.repository.CompanyRepository;
 import com.offerblock.repository.OfferRepository;
@@ -54,6 +59,9 @@ public class ProjectController {
 	private final OfferRepository offerRepository;
 
 	@Autowired
+	private BudgetSanctionRequestRepository budgetSanctionRequestRepository;
+
+	@Autowired
 	private ProjectApprovalRequestRepository projectApprovalRequestRepository;
 
 	@Autowired
@@ -70,6 +78,24 @@ public class ProjectController {
 		this.companyRepository = companyRepository;
 		this.projectRepository = projectRepository;
 		this.offerRepository = offerRepository;
+	}
+
+	@PreAuthorize("hasRole('APPROVER')")
+	@PutMapping("/approve/{projectId}")
+	public ResponseEntity<?> approveProject(@PathVariable Long projectId) {
+		try {
+			projectService.approveProject(projectId);
+			return ResponseEntity
+					.ok(Collections.singletonMap("message", "Project approved and sent for budget approval."));
+		} catch (ResourceNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", e.getMessage()));
+		} catch (IllegalStateException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(Collections.singletonMap("error", e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("error", "An unexpected error occurred."));
+		}
 	}
 
 	@PreAuthorize("hasAnyRole('COMPANY','RECRUITER')")
@@ -182,17 +208,17 @@ public class ProjectController {
 		return ResponseEntity.ok("Project '" + projectName + "' deleted successfully.");
 	}
 
-	@PreAuthorize("hasRole('APPROVER')")
-	@PutMapping("/approve/{projectId}")
-	public ResponseEntity<?> approveProject(@PathVariable Long projectId) {
-		Project project = projectRepository.findById(projectId)
-				.orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-
-		project.setStatus(ProjectStatus.APPROVED);
-		projectRepository.save(project);
-
-		return ResponseEntity.ok("Project approved successfully!");
-	}
+//	@PreAuthorize("hasRole('APPROVER')")
+//	@PutMapping("/approve/{projectId}")
+//	public ResponseEntity<?> approveProject(@PathVariable Long projectId) {
+//		Project project = projectRepository.findById(projectId)
+//				.orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+//
+//		project.setStatus(ProjectStatus.APPROVED);
+//		projectRepository.save(project);
+//
+//		return ResponseEntity.ok("Project approved successfully!");
+//	}
 
 	@PreAuthorize("hasRole('SANCTIONER')")
 	@PutMapping("/sanctionBudget/{projectId}")
@@ -271,6 +297,41 @@ public class ProjectController {
 
 		}
 		throw new ResourceNotFoundException("User not found as approver or company");
+	}
+
+	
+	@PreAuthorize("hasAnyRole('COMPANY', 'SANCTIONER')")
+	@GetMapping("/budget-requests/pending")
+	public ResponseEntity<List<BudgetSanctionRequestDto>> getPendingBudgetRequests(Principal principal) {
+
+		String email = principal.getName();
+
+		Optional<Candidate> candidateOpt = candidateRepository.findByEmail(email);
+		if (candidateOpt.isPresent()) {
+			Candidate sanctionerCandidate = candidateOpt.get();
+
+			List<BudgetSanctionRequest> requests = budgetSanctionRequestRepository
+					.findBySanctionerAndStatus(sanctionerCandidate, BudgetStatus.PENDING);
+
+			List<BudgetSanctionRequestDto> dtos = requests.stream().map(BudgetSanctionRequestDto::new)
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(dtos);
+		}
+
+		Optional<Company> companyOpt = companyRepository.findByEmail(email);
+		if (companyOpt.isPresent()) {
+			Company company = companyOpt.get();
+
+			List<BudgetSanctionRequest> requests = budgetSanctionRequestRepository.findByCompanyAndStatus(company,
+					BudgetStatus.PENDING_SANCTIONER_ASSIGNMENT);
+
+			List<BudgetSanctionRequestDto> dtos = requests.stream().map(BudgetSanctionRequestDto::new)
+					.collect(Collectors.toList());
+
+			return ResponseEntity.ok(dtos);
+		}
+		throw new ResourceNotFoundException("USer not found as a sanctioner or company");
 	}
 
 }

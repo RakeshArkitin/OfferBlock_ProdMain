@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.offerblock.entity.BudgetSanctioner;
 import com.offerblock.entity.Candidate;
+import com.offerblock.entity.Company;
 
 public interface BudgetSanctionerRepository extends JpaRepository<BudgetSanctioner, Long> {
 
@@ -21,4 +22,6 @@ public interface BudgetSanctionerRepository extends JpaRepository<BudgetSanction
     List<BudgetSanctioner> findAllByCandidate_CandidateId(String candidateId);
 
     List<BudgetSanctioner> findByCompanyIdAndActiveTrue(Long companyId);
+
+	List<BudgetSanctioner> findByCompany(Company company);
 }

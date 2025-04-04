@@ -28,28 +28,32 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProjectApprovalRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private ApprovalStatus status = ApprovalStatus.PENDING;
+	@Enumerated(EnumType.STRING)
+	private ApprovalStatus status = ApprovalStatus.PENDING;
 
-    @CreationTimestamp
-    private LocalDateTime requestDate;
+	@CreationTimestamp
+	private LocalDateTime requestDate;
 
-    @ManyToOne
-    @JoinColumn(name = "approver_id")
-    private ProjectApprover approver;
+	@ManyToOne
+	@JoinColumn(name = "approver_id")
+	private ProjectApprover approver;
 
-    @OneToOne
-    @JoinColumn(name = "project_id")
-    @JsonIgnore
-    private Project project;
-    
-    @ManyToOne
-    @JoinColumn(name = "company_id") 
-    private Company company;
+	@ManyToOne
+	@JoinColumn(name = "sanctioner_id") // Budget Sanctioner
+	private BudgetSanctioner sanctioner;
 
-    private String requestedBy; 
+	@OneToOne
+	@JoinColumn(name = "project_id")
+	@JsonIgnore
+	private Project project;
+
+	@ManyToOne
+	@JoinColumn(name = "company_id")
+	private Company company;
+
+	private String requestedBy;
 }

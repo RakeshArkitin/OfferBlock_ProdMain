@@ -3,15 +3,19 @@ package com.offerblock.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
 import com.offerblock.dto.DepartmentDTO;
 import com.offerblock.dto.PositionDTO;
 import com.offerblock.dto.ProjectResponseDTO;
 import com.offerblock.dto.RecruiterDTO;
 import com.offerblock.entity.AssignedRecruiter;
 import com.offerblock.entity.Budget;
+import com.offerblock.entity.BudgetSanctionRequest;
+import com.offerblock.entity.BudgetSanctioner;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.Department;
 import com.offerblock.entity.Position;
@@ -20,9 +24,13 @@ import com.offerblock.entity.ProjectApprovalRequest;
 import com.offerblock.entity.ProjectApprover;
 import com.offerblock.entity.ProjectMetrics;
 import com.offerblock.enums.ApprovalStatus;
+import com.offerblock.enums.BudgetStatus;
+import com.offerblock.enums.ProjectStatus;
 import com.offerblock.exception.DuplicateValueExistsException;
 import com.offerblock.exception.ResourceNotFoundException;
 import com.offerblock.repository.AssignedRecruiterRepository;
+import com.offerblock.repository.BudgetSanctionRequestRepository;
+import com.offerblock.repository.BudgetSanctionerRepository;
 import com.offerblock.repository.CompanyRepository;
 import com.offerblock.repository.DepartmentRepository;
 import com.offerblock.repository.OfferRepository;
@@ -32,6 +40,7 @@ import com.offerblock.repository.ProjectApproverRepository;
 import com.offerblock.repository.ProjectMetricsRepository;
 import com.offerblock.repository.ProjectRepository;
 import com.offerblock.service.ProjectService;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -44,18 +53,19 @@ public class ProjectServiceImpl implements ProjectService {
 	private final OfferRepository offerRepository;
 	private final PositionRepository positionRepository;
 	private final CompanyRepository companyRepository;
-
-	@Autowired
-	private ProjectApprovalRequestRepository projectApprovalRequestRepository;
-
-	@Autowired
-	private ProjectApproverRepository projectApproverRepository;
+	private final BudgetSanctionerRepository budgetSanctionerRepository;
+	private final BudgetSanctionRequestRepository budgetSanctionRequestRepository;
+	private final ProjectApprovalRequestRepository projectApprovalRequestRepository;
+	private final ProjectApproverRepository projectApproverRepository;
 
 	@Autowired
 	public ProjectServiceImpl(ProjectRepository projectRepository, AssignedRecruiterRepository recruiterRepository,
 			DepartmentRepository departmentRepository, ProjectMetricsRepository projectMetricsRepository,
-			OfferRepository offerRepository, PositionRepository positionRepository,
-			CompanyRepository companyRepository) {
+			OfferRepository offerRepository, PositionRepository positionRepository, CompanyRepository companyRepository,
+			BudgetSanctionerRepository budgetSanctionerRepository,
+			BudgetSanctionRequestRepository budgetSanctionRequestRepository,
+			ProjectApproverRepository projectApproverRepository,
+			ProjectApprovalRequestRepository projectApprovalRequestRepository) {
 		super();
 		this.projectRepository = projectRepository;
 		this.recruiterRepository = recruiterRepository;
@@ -64,6 +74,10 @@ public class ProjectServiceImpl implements ProjectService {
 		this.offerRepository = offerRepository;
 		this.positionRepository = positionRepository;
 		this.companyRepository = companyRepository;
+		this.budgetSanctionerRepository = budgetSanctionerRepository;
+		this.budgetSanctionRequestRepository = budgetSanctionRequestRepository;
+		this.projectApprovalRequestRepository = projectApprovalRequestRepository;
+		this.projectApproverRepository = projectApproverRepository;
 	}
 
 	@Override
@@ -170,6 +184,19 @@ public class ProjectServiceImpl implements ProjectService {
 			// ❗ No approver available → pending assignment
 			approvalRequest.setApprover(null);
 			approvalRequest.setStatus(ApprovalStatus.PENDING_APPROVER_ASSIGNMENT);
+		}
+
+		if (approvalRequest.getStatus() == ApprovalStatus.APPROVED) {
+			List<BudgetSanctioner> sanctioners = budgetSanctionerRepository.findByCompany(savedProject.getCompany());
+
+			if (!sanctioners.isEmpty()) {
+				BudgetSanctionRequest budgetRequest = new BudgetSanctionRequest();
+				budgetRequest.setProject(savedProject);
+				budgetRequest.setCompany(savedProject.getCompany());
+				budgetRequest.setSanctioner(sanctioners.get(0));
+				budgetRequest.setStatus(BudgetStatus.PENDING);
+				budgetSanctionRequestRepository.save(budgetRequest);
+			}
 		}
 
 		projectApprovalRequestRepository.save(approvalRequest);
@@ -300,5 +327,37 @@ public class ProjectServiceImpl implements ProjectService {
 		departmentRepository.deleteAll(project.getDepartments());
 		projectRepository.delete(project);
 	}
+	
+	@Transactional
+	@Override
+	public void approveProject(Long projectId) {
+		
+	    Project project = projectRepository.findById(projectId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+	    
+	    if (!project.getStatus().equals(ProjectStatus.PENDING)) {
+	        throw new IllegalStateException("Project cannot be approved in its current status: " + project.getStatus());
+	    }
+
+	    project.setStatus(ProjectStatus.APPROVED);
+	    projectRepository.save(project);
+
+	    List<BudgetSanctioner> sanctioners = budgetSanctionerRepository.findByCompany(project.getCompany());
+
+	    BudgetSanctionRequest budgetRequest = new BudgetSanctionRequest();
+	    budgetRequest.setProject(project);
+	    budgetRequest.setCompany(project.getCompany());
+
+	    if (!sanctioners.isEmpty()) {
+	        budgetRequest.setSanctioner(sanctioners.get(0));
+	        budgetRequest.setStatus(BudgetStatus.PENDING);
+	    } else {
+	        budgetRequest.setSanctioner(null);
+	        budgetRequest.setStatus(BudgetStatus.PENDING_SANCTIONER_ASSIGNMENT);
+	    }
+
+	    budgetSanctionRequestRepository.save(budgetRequest);
+	}
+
 
 }

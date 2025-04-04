@@ -10,10 +10,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.offerblock.dto.LoginRequest;
+import com.offerblock.entity.BudgetSanctioner;
 import com.offerblock.entity.Candidate;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.ProjectApprover;
 import com.offerblock.entity.Recruiter;
+import com.offerblock.repository.BudgetSanctionerRepository;
 import com.offerblock.repository.CandidateRepository;
 import com.offerblock.repository.CompanyRepository;
 import com.offerblock.repository.ProjectApproverRepository;
@@ -32,17 +34,20 @@ public class AuthService {
 	private final CandidateRepository candidateRepository;
 	private final RecruiterRepository recruiterRepository;
 	private final ProjectApproverRepository projectApproverRepository;
+	private final BudgetSanctionerRepository budgetSanctionerRepository;
 
 	@Autowired
 	public AuthService(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
 			CompanyRepository companyRepository, CandidateRepository candidateRepository,
-			RecruiterRepository recruiterRepository, ProjectApproverRepository projectApproverRepository) {
+			RecruiterRepository recruiterRepository, ProjectApproverRepository projectApproverRepository,
+			BudgetSanctionerRepository budgetSanctionerRepository) {
 		this.authenticationManager = authenticationManager;
 		this.jwtUtils = jwtUtils;
 		this.companyRepository = companyRepository;
 		this.candidateRepository = candidateRepository;
 		this.recruiterRepository = recruiterRepository;
 		this.projectApproverRepository = projectApproverRepository;
+		this.budgetSanctionerRepository = budgetSanctionerRepository;
 	}
 
 	public ResponseEntity<?> authenticate(@Valid LoginRequest loginRequest) {
@@ -81,6 +86,11 @@ public class AuthService {
 						.findByCandidate_CandidateIdAndActiveTrue(userId);
 				if (approverOpt.isPresent()) {
 					roles.add("APPROVER");
+				}
+				
+				Optional<BudgetSanctioner> sanctionerOpt= budgetSanctionerRepository.findByCandidate_CandidateIdAndActiveTrue(userId);
+				if(sanctionerOpt.isPresent()) {
+					roles.add("SANCTIONER");
 				}
 
 				return ResponseEntity.ok(new AuthResponse(jwt, roles, userId));
