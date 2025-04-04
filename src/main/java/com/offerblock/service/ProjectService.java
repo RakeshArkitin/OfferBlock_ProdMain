@@ -1,7 +1,6 @@
 package com.offerblock.service;
 
 import java.util.List;
-
 import com.offerblock.dto.ProjectResponseDTO;
 import com.offerblock.entity.Company;
 import com.offerblock.entity.Project;
