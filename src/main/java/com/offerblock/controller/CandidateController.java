@@ -15,42 +15,66 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class CandidateController {
 
-    private final CandidateService candidateService;
+	private final CandidateService candidateService;
 
-    @Autowired
-    public CandidateController(CandidateService candidateService) {
-        this.candidateService = candidateService;
-    }
+	@Autowired
+	public CandidateController(CandidateService candidateService) {
+		this.candidateService = candidateService;
+	}
 
-    @PostMapping("/candidatesignup")
-    public ResponseEntity<String> save(@Valid @RequestBody CandidateSignup candidateSignup) {
-        candidateService.save(candidateSignup);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Success: Candidate '" + candidateSignup.getUsername() + "' registered successfully!");
-    }
+	@PostMapping("/candidatesignup")
+	public ResponseEntity<String> save(@Valid @RequestBody CandidateSignup candidateSignup) {
+		String message = "";
+		try {
+			candidateService.save(candidateSignup);
+			message = "Candidate registered successfully!";
+			return new ResponseEntity<>(message, HttpStatus.CREATED);
+		} catch (Exception e) {
+			message = "Invalid Data";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
 
-    @PreAuthorize("hasAnyRole('CANDIDATE','COMPANY')")
-    @GetMapping("/{candidateId}")
-    public ResponseEntity<Object> getCandidate(@PathVariable String candidateId) {
-        try {
-            Candidate candidate = candidateService.getCandidateById(candidateId);
-            return ResponseEntity.ok(candidate);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
-        }
-    }
+	}
 
-    @PreAuthorize("hasRole('COMPANY')")
-    @DeleteMapping("/{candidateId}")
-    public ResponseEntity<String> delete(@PathVariable String candidateId) {
-        candidateService.deleteById(candidateId);
-        return ResponseEntity.ok("Candidate deleted successfully");
-    }
+	@PreAuthorize("hasAnyRole('CANDIDATE','COMPANY')")
+	@GetMapping("/{candidateId}")
+	public ResponseEntity<Object> getCandidate(@PathVariable String candidateId) {
+		try {
+			Candidate candidate = candidateService.getCandidateById(candidateId);
+			return ResponseEntity.ok(candidate);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+		}
+	}
 
-    @PreAuthorize("hasRole('COMPANY')")
-    @PostMapping("/assign-recruiter/{candidateId}")
-    public ResponseEntity<String> assignRecruiterRole(@PathVariable String candidateId) {
-        candidateService.assignRecruiterRole(candidateId);
-        return ResponseEntity.ok("Candidate assigned as recruiter successfully.");
-    }
+	@PreAuthorize("hasRole('COMPANY')")
+	@DeleteMapping("/{candidateId}")
+	public ResponseEntity<String> delete(@PathVariable String candidateId) {
+
+		String message = "";
+		try {
+			candidateService.deleteById(candidateId);
+			message = "Candidate deleted successfully";
+			return new ResponseEntity<>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
+
+	}
+
+	@PreAuthorize("hasRole('COMPANY')")
+	@PostMapping("/assign-recruiter/{candidateId}")
+	public ResponseEntity<String> assignRecruiterRole(@PathVariable String candidateId) {
+		String message = "";
+		try {
+			candidateService.assignRecruiterRole(candidateId);
+			message = "Candidate assigned as recruiter successfully...";
+			return new ResponseEntity<>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
+
+	}
 }

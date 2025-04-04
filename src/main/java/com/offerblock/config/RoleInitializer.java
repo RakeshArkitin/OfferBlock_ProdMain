@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
 import com.offerblock.entity.Role;
 import com.offerblock.enums.ERole;
 import com.offerblock.repository.RoleRepository;

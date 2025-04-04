@@ -3,6 +3,7 @@ package com.offerblock.controller;
 import java.security.Principal;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,16 +27,32 @@ public class ApproverController {
 	@PostMapping("/assign")
 	public ResponseEntity<?> assignCandidateAsApprover(@RequestBody AssignApproverRequest request,
 			Principal principal) {
-		projectApproverService.assignProjectApprover(request, principal);
-		return ResponseEntity.ok("Approver assigned successfully...");
+		String message = "";
+		try {
+			projectApproverService.assignProjectApprover(request, principal);
+			message = "Approver assigned successfully...";
+			return new ResponseEntity<>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")
 	@PutMapping("/update/{candidateId}")
 	public ResponseEntity<?> updateProjectApprover(@PathVariable String candidateId,
 			@RequestParam("designation") String designation, Principal principal) {
-		projectApproverService.updateProjectApprover(candidateId, designation, principal);
-		return ResponseEntity.ok("Approver updated successfully.");
+		String message = "";
+		try {
+			projectApproverService.updateProjectApprover(candidateId, designation, principal);
+			message = "Approver updated successfully...";
+			return new ResponseEntity<>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")

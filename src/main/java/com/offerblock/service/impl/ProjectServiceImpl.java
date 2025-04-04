@@ -207,15 +207,13 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	@Override
 	public Project updateProject(String projectName, Project updatedProject, String companyEmail) {
-		// Validate Company
+
 		Company company = companyRepository.findByEmail(companyEmail)
 				.orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
-		// Fetch Existing Project
 		Project existingProject = projectRepository.findByProjectName(projectName)
 				.orElseThrow(() -> new ResourceNotFoundException("Project not found with name: " + projectName));
 
-		// Ensure the project belongs to the company
 		if (!existingProject.getCompany().getId().equals(company.getId())) {
 			throw new AccessDeniedException("You do not have permission to update this project");
 		}

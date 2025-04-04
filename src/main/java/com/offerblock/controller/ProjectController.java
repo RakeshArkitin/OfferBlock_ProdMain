@@ -191,21 +191,30 @@ public class ProjectController {
 	@PreAuthorize("hasRole('COMPANY')")
 	@DeleteMapping("/delete/{projectName}")
 	public ResponseEntity<String> deleteProjectByName(@PathVariable String projectName, Principal principal) {
-		String companyEmail = principal.getName();
 
-		Company company = companyRepository.findByEmail(companyEmail)
-				.orElseThrow(() -> new RuntimeException("Company not found"));
+		String message = "";
+		try {
+			String companyEmail = principal.getName();
 
-		Project project = projectRepository.findByProjectName(projectName)
-				.orElseThrow(() -> new RuntimeException("Project not found"));
+			Company company = companyRepository.findByEmail(companyEmail)
+					.orElseThrow(() -> new RuntimeException("Company not found"));
 
-		if (!project.getCompany().getCompanyId().equals(company.getCompanyId())) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this project.");
+			Project project = projectRepository.findByProjectName(projectName)
+					.orElseThrow(() -> new RuntimeException("Project not found"));
+
+			if (!project.getCompany().getCompanyId().equals(company.getCompanyId())) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN)
+						.body("You are not authorized to delete this project.");
+			}
+			message = "Project deleted successfully.";
+			projectRepository.delete(project);
+
+			return new ResponseEntity<String>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
 		}
 
-		projectRepository.delete(project);
-
-		return ResponseEntity.ok("Project '" + projectName + "' deleted successfully.");
 	}
 
 //	@PreAuthorize("hasRole('APPROVER')")
@@ -299,7 +308,6 @@ public class ProjectController {
 		throw new ResourceNotFoundException("User not found as approver or company");
 	}
 
-	
 	@PreAuthorize("hasAnyRole('COMPANY', 'SANCTIONER')")
 	@GetMapping("/budget-requests/pending")
 	public ResponseEntity<List<BudgetSanctionRequestDto>> getPendingBudgetRequests(Principal principal) {

@@ -34,22 +34,35 @@ public class CompanyController {
 
 	@PostMapping("/companysignup")
 	public ResponseEntity<String> save(@Valid @RequestBody CompanySignup companySignup) {
+		String message = "";
+		try {
+			if (companyRepository.existsByEmail(companySignup.getEmail())) {
+				return ResponseEntity.status(HttpStatus.CONFLICT).body(
+						"The email '" + companySignup.getEmail() + "' is already registered. Try logging in instead.");
+			}
+			message = "Company register successfully";
+			companyService.save(companySignup);
+			return new ResponseEntity<>(message, HttpStatus.CREATED);
 
-		if (companyRepository.existsByEmail(companySignup.getEmail())) {
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(
-					"The email '" + companySignup.getEmail() + "' is already registered. Try logging in instead.");
+		} catch (Exception e) {
+			message = "Invalid Data";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
 		}
-
-		companyService.save(companySignup);
-		return ResponseEntity.ok("Company register successfully");
 
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> delet(@PathVariable Long id) {
-		companyRepository.deleteById(id);
-		return ResponseEntity.ok("Deleted Success");
+	public ResponseEntity<?> delete(@PathVariable Long id) {
+		String message = "";
+		try {
+			companyRepository.deleteById(id);
+			message = "Successfully Deleted";
+			return new ResponseEntity<>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
 	}
 
 }

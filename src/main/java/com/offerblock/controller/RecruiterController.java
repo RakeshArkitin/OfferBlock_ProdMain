@@ -3,6 +3,8 @@ package com.offerblock.controller;
 import java.security.Principal;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -43,8 +45,15 @@ public class RecruiterController {
 	@PostMapping("/assign")
 	@PreAuthorize("hasRole('COMPANY')")
 	public ResponseEntity<?> assignRecruiter(@RequestBody AssignRecruiterRequest request, Principal principal) {
-		recruiterService.assignCandidateAsRecruiter(request, principal);
-		return ResponseEntity.ok("Recruiter assigned successfully...");
+		String message = "";
+		try {
+			recruiterService.assignCandidateAsRecruiter(request, principal);
+			message = "Recruiter assigned successfully...";
+			return new ResponseEntity<>(message, HttpStatus.OK);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	@PreAuthorize("hasRole('COMPANY')")

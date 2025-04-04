@@ -1,14 +1,9 @@
 package com.offerblock.entity;
 
 import java.time.LocalDateTime;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import com.offerblock.enums.ApprovalStatus;
 import com.offerblock.enums.BudgetStatus;
-import com.stripe.param.UsageRecordCreateOnSubscriptionItemParams.Timestamp;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

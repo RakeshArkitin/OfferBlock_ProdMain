@@ -32,8 +32,6 @@ import com.offerblock.service.impl.OfferServiceImpl;
 @CrossOrigin(origins = "*")
 public class OfferController {
 
-//	private static final Logger logger = LoggerFactory.getLogger(OfferController.class);
-
 	private final OfferServiceImpl offerService;
 
 	private final OfferRepository offerRepository;
@@ -91,8 +89,16 @@ public class OfferController {
 	@PreAuthorize("hasRole('COMPANY')")
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteById(@PathVariable Long id) {
-		offerService.deleteByID(id);
-		return ResponseEntity.ok("Offer Deleted Successfully...");
+		String message = "";
+		try {
+			offerService.deleteByID(id);
+			message = "Offer Deleted Successfully...";
+			return new ResponseEntity<String>(message, HttpStatus.CREATED);
+		} catch (Exception e) {
+			message = "Details Invalid";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	@PreAuthorize("hasRole('CANDIDATE')")
@@ -111,19 +117,21 @@ public class OfferController {
 			@RequestParam(required = false) String ctc, @RequestParam(required = false) String jobLocation,
 			@RequestParam(required = false) String deadline, @RequestParam(required = false) String joiningDate)
 			throws IOException {
-
+		String message = "";
 		try {
 			LocalDate parsedDeadline = (deadline != null) ? LocalDate.parse(deadline) : null;
 			LocalDate parsedJoiningDate = (joiningDate != null) ? LocalDate.parse(joiningDate) : null;
 
 			offerService.updateOffer(id, candidateId, candidateName, offerPdf, position, ctc, jobLocation,
 					parsedDeadline, parsedJoiningDate);
-
-			return ResponseEntity.ok("UPDATED SUCCESSFULLY!!");
+			message = "UPDATED SUCCESSFULLY!!";
+			return new ResponseEntity<>(message, HttpStatus.OK);
 		} catch (ResourceNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("OFFER NOT FOUND");
+			message = "OFFER NOT FOUND";
+			return new ResponseEntity<String>(message, HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALD DATE FORMAT");
+			message = "INVALD DATE FORMAT";
+			return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
 		}
 	}
 
